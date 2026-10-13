@@ -1,6 +1,6 @@
-:root{--sage:#7d8f72;--sage-d:#4f6046;--sage-l:#e6ebe0;--gold:#c39550;--gold-l:#d8ac64;--lilac:#b9a6d6;--lilac-l:#efeaf6;--bg:#f8f6fa;--ink:#2b3027;--mut:#5d6657;
+:root{color-scheme:only light;--sage:#7d8f72;--sage-d:#4f6046;--sage-l:#e6ebe0;--gold:#c39550;--gold-l:#d8ac64;--lilac:#b9a6d6;--lilac-l:#efeaf6;--bg:#f8f6fa;--ink:#2b3027;--mut:#5d6657;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-html{scroll-behavior:smooth;scroll-padding-top:70px}
+html{background:#f8f6fa;scroll-behavior:smooth;scroll-padding-top:70px}
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:400 17px/1.65 Jost,system-ui,sans-serif}
 img{max-width:100%;display:block}
@@ -70,3 +70,5 @@ section{padding:56px 0}
 .cards{grid-template-columns:repeat(2,1fr)}
 .btn.alt{margin:12px 6px 0}
 }
+.card a.pedir{display:inline-block;margin-top:12px;color:var(--sage-d);font-weight:500;text-decoration:none;border-bottom:1px solid var(--gold)}
+.card .preco{display:block;margin-top:6px;color:var(--sage-d);font-weight:500}
