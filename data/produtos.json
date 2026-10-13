@@ -3,14 +3,14 @@
     {
       "nome": "Sabonetes artesanais",
       "descricao": "Embalados à mão, ótimos para presentear.",
-      "imagem": "assets/img/produtos/sabonete-lilas.jpg",
+      "imagem": "assets/img/sabonete-lilas.jpg",
       "preco": "",
       "disponivel": true
     },
     {
       "nome": "Sabonetes naturais",
       "descricao": "Texturas e ativos que cuidam da pele.",
-      "imagem": "assets/img/produtos/sabonete-natural.jpg",
+      "imagem": "assets/img/sabonete-natural.jpg",
       "preco": "",
       "disponivel": true
     },
