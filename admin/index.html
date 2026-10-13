@@ -1,1 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="only light">
+<title>Painel · Vellazo Aromatique</title>
+<style>
+:root{color-scheme:only light;--sage:#4f6046;--sage-l:#e6ebe0;--gold:#c39550;--lilac-l:#efeaf6;--ink:#2b3027}
+*{box-sizing:border-box}
+body{margin:0;background:#f8f6fa;color:var(--ink);font:17px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+header{background:var(--sage);color:#fff;padding:16px 20px;text-align:center;font-size:1.1rem;letter-spacing:.04em}
+main{max-width:640px;margin:0 auto;padding:20px 16px 120px}
+h1{font-size:1.4rem;margin:8px 0 4px}
+p.ajuda{color:#5d6657;margin:0 0 18px}
+input[type=text],input[type=password],textarea{width:100%;padding:12px;border:1px solid #c9cfc3;border-radius:10px;font:inherit;background:#fff}
+label{display:block;font-size:.9rem;color:#5d6657;margin:12px 0 4px}
+button{font:inherit;cursor:pointer;border:0;border-radius:999px;padding:13px 22px;background:var(--gold);color:#fff;font-weight:600}
+button.sec{background:#fff;color:var(--sage);border:1px solid var(--sage)}
+button.perigo{background:#fff;color:#a33;border:1px solid #d9a}
+button:disabled{opacity:.5}
+.card{background:#fff;border-radius:14px;padding:16px;margin:14px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.foto{display:flex;gap:14px;align-items:center}
+.foto .img{width:96px;height:96px;border-radius:10px;background:var(--lilac-l);display:grid;place-items:center;overflow:hidden;color:#8a7aa8;font-size:.8rem;text-align:center;flex:none}
+.foto .img img{width:100%;height:100%;object-fit:cover}
+.linha{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.chk{display:flex;align-items:center;gap:10px;margin-top:12px}
+.chk input{width:22px;height:22px}
+.barra{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid #ddd;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;justify-content:center}
+#msg{text-align:center;min-height:1.4em;margin:8px 0;font-weight:600}
+.ok{color:#2f7a3f}.erro{color:#a33}
+a{color:var(--sage)}
+</style>
+</head>
+<body>
+<header>VELLAZO AROMATIQUE · Painel</header>
+<main>
+<section id="login">
+  <h1>Entrar</h1>
+  <p class="ajuda">Digite a senha do painel.</p>
+  <label for="senha">Senha</label>
+  <input type="password" id="senha" autocomplete="current-password">
+  <div class="linha"><button id="entrar">Entrar</button></div>
+  <div id="msgLogin" class="erro" style="margin-top:10px"></div>
+</section>
 
+<section id="painel" hidden>
+  <h1>Produtos da página</h1>
+  <p class="ajuda">Aqui você cadastra o que aparece na seção "Feito à mão". Depois de mexer, toque em <b>Salvar no site</b>.</p>
+  <div id="lista"></div>
+  <div class="linha"><button class="sec" id="novo">+ Adicionar produto</button></div>
+  <div id="msg"></div>
+  <div class="barra"><button id="salvar">Salvar no site</button><a href="../" target="_blank" rel="noopener" style="align-self:center">Ver o site</a></div>
+</section>
+</main>
+
+<script>
+(function () {
+  var senha = sessionStorage.getItem('vz_senha') || '';
+  var produtos = [];
+  var $ = function (id) { return document.getElementById(id); };
+
+  function msg(t, cls) { var m = $('msg'); m.textContent = t; m.className = cls || ''; }
+
+  function api(url, opts) {
+    opts = opts || {};
+    opts.headers = Object.assign({ 'x-admin-password': senha }, opts.headers || {});
+    return fetch(url, opts).then(function (r) {
+      return r.json().catch(function () { return {}; }).then(function (d) {
+        if (!r.ok) { var e = new Error(d.erro || 'Erro'); e.status = r.status; throw e; }
+        return d;
+      });
+    });
+  }
+
+  function entrar(s) {
+    senha = s;
+    return api('/api/salvar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ check: true }) })
+      .then(function () {
+        sessionStorage.setItem('vz_senha', senha);
+        $('login').hidden = true; $('painel').hidden = false;
+        return carregar();
+      });
+  }
+
+  function carregar() {
+    return fetch('/api/produtos', { cache: 'no-store' }).then(function (r) { return r.json(); })
+      .then(function (d) {
+        if (d.produtos && d.produtos.length) return d.produtos;
+        return fetch('../data/produtos.json').then(function (r) { return r.json(); }).then(function (j) { return j.produtos; });
+      })
+      .catch(function () { return []; })
+      .then(function (l) { produtos = l || []; desenhar(); });
+  }
+
+  function desenhar() {
+    var box = $('lista'); box.innerHTML = '';
+    produtos.forEach(function (p, i) {
+      var c = document.createElement('div'); c.className = 'card';
+      c.innerHTML =
+        '<div class="foto"><div class="img"></div><div><button class="sec" data-a="foto">Trocar foto</button>' +
+        '<input type="file" accept="image/*" hidden></div></div>' +
+        '<label>Nome</label><input type="text" data-k="nome" maxlength="80">' +
+        '<label>Descrição curta</label><textarea rows="2" data-k="descricao" maxlength="200"></textarea>' +
+        '<label>Preço (opcional, ex.: R$ 35,00)</label><input type="text" data-k="preco" maxlength="30">' +
+        '<div class="chk"><input type="checkbox" data-k="disponivel" id="d' + i + '"><label for="d' + i + '" style="margin:0;color:inherit">Mostrar no site</label></div>' +
+        '<div class="linha"><button class="sec" data-a="sobe">↑ Subir</button><button class="sec" data-a="desce">↓ Descer</button><button class="perigo" data-a="apagar">Apagar</button></div>';
+      var img = c.querySelector('.img');
+      if (p.imagem) { var im = document.createElement('img'); im.src = p.imagem.indexOf('http') === 0 ? p.imagem : '../' + p.imagem; im.alt = ''; img.appendChild(im); }
+      else img.textContent = 'sem foto';
+      c.querySelectorAll('[data-k]').forEach(function (inp) {
+        var k = inp.getAttribute('data-k');
+        if (inp.type === 'checkbox') inp.checked = p.disponivel !== false; else inp.value = p[k] || '';
+        inp.addEventListener('input', function () { p[k] = inp.type === 'checkbox' ? inp.checked : inp.value; });
+        inp.addEventListener('change', function () { p[k] = inp.type === 'checkbox' ? inp.checked : inp.value; });
+      });
+      var file = c.querySelector('input[type=file]');
+      c.querySelector('[data-a=foto]').addEventListener('click', function () { file.click(); });
+      file.addEventListener('change', function () { if (file.files[0]) enviarFoto(file.files[0], p); });
+      c.querySelector('[data-a=sobe]').addEventListener('click', function () { mover(i, -1); });
+      c.querySelector('[data-a=desce]').addEventListener('click', function () { mover(i, 1); });
+      c.querySelector('[data-a=apagar]').addEventListener('click', function () {
+        if (confirm('Apagar este produto? Se só quiser esconder, desmarque "Mostrar no site".')) { produtos.splice(i, 1); desenhar(); }
+      });
+      box.appendChild(c);
+    });
+  }
+
+  function mover(i, d) {
+    var j = i + d; if (j < 0 || j >= produtos.length) return;
+    var t = produtos[i]; produtos[i] = produtos[j]; produtos[j] = t; desenhar();
+  }
+
+  // Reduz a foto para no máximo 1000 px antes de enviar
+  function reduzir(file) {
+    return new Promise(function (ok, fail) {
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () {
+        var m = 1000, s = Math.min(1, m / Math.max(im.width, im.height));
+        var cv = document.createElement('canvas'); cv.width = Math.round(im.width * s); cv.height = Math.round(im.height * s);
+        cv.getContext('2d').drawImage(im, 0, 0, cv.width, cv.height);
+        URL.revokeObjectURL(url);
+        cv.toBlob(function (b) { b ? ok(b) : fail(new Error('Foto inválida')); }, 'image/jpeg', 0.85);
+      };
+      im.onerror = function () { fail(new Error('Não consegui abrir essa foto')); };
+      im.src = url;
+    });
+  }
+
+  function enviarFoto(file, p) {
+    msg('Enviando foto…');
+    reduzir(file).then(function (blob) { return blob.arrayBuffer(); })
+      .then(function (buf) {
+        return api('/api/upload?nome=' + encodeURIComponent(p.nome || 'produto'), { method: 'POST', headers: { 'Content-Type': 'application/octet-stream' }, body: buf });
+      })
+      .then(function (d) { p.imagem = d.url; desenhar(); msg('Foto enviada. Toque em "Salvar no site".', 'ok'); })
+      .catch(function (e) { msg(e.message, 'erro'); });
+  }
+
+  $('novo').addEventListener('click', function () {
+    produtos.push({ nome: '', descricao: '', imagem: '', preco: '', disponivel: true }); desenhar();
+    window.scrollTo(0, document.body.scrollHeight);
+  });
+
+  $('salvar').addEventListener('click', function () {
+    var b = $('salvar'); b.disabled = true; msg('Salvando…');
+    api('/api/salvar', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ produtos: produtos }) })
+      .then(function () { msg('Pronto! O site já mostra as mudanças.', 'ok'); })
+      .catch(function (e) { msg(e.message, 'erro'); })
+      .then(function () { b.disabled = false; });
+  });
+
+  function tentar() {
+    var s = $('senha').value; $('msgLogin').textContent = '';
+    entrar(s).catch(function (e) { $('msgLogin').textContent = e.status === 401 ? 'Senha incorreta.' : e.message; });
+  }
+  $('entrar').addEventListener('click', tentar);
+  $('senha').addEventListener('keydown', function (e) { if (e.key === 'Enter') tentar(); });
+  if (senha) entrar(senha).catch(function () { sessionStorage.removeItem('vz_senha'); });
+})();
+</script>
+</body>
+</html>
