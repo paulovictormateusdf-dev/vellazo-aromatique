@@ -1,0 +1,32 @@
+{
+  "produtos": [
+    {
+      "nome": "Sabonetes artesanais",
+      "descricao": "Embalados à mão, ótimos para presentear.",
+      "imagem": "assets/img/produtos/sabonete-lilas.jpg",
+      "preco": "",
+      "disponivel": true
+    },
+    {
+      "nome": "Sabonetes naturais",
+      "descricao": "Texturas e ativos que cuidam da pele.",
+      "imagem": "assets/img/produtos/sabonete-natural.jpg",
+      "preco": "",
+      "disponivel": true
+    },
+    {
+      "nome": "Lip gloss",
+      "descricao": "Brilho e hidratação para os lábios.",
+      "imagem": "",
+      "preco": "",
+      "disponivel": true
+    },
+    {
+      "nome": "Aromatizadores",
+      "descricao": "O perfume da Vellazo na sua casa.",
+      "imagem": "",
+      "preco": "",
+      "disponivel": true
+    }
+  ]
+}
